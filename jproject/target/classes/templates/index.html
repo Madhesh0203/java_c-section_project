@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predict C-section</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url("/picyyy.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      font-family: Arial, sans-serif;
+    }
+    h2 {
+      font-size: 200%;
+    }
+    .outer {
+      background-color: rgba(255, 228, 185, 0.65);
+      width: 400px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .input-line {
+      margin-bottom: 12px;
+      text-align: left;
+      font-weight: bold;
+    }
+    input {
+      width: 95%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    button {
+      padding: 12px;
+      width: 100%;
+      background-color: gray;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: black;
+    }
+    .qna-chatbox {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 250px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+      padding: 10px;
+      font-size: 14px;
+      display: none;
+    }
+    .qna-item {
+      border-bottom: 1px solid #ddd;
+      padding: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease-in-out;
+    }
+    .qna-item:hover {
+      background: rgba(130, 130, 130, 0.6);
+    }
+    .qna-item.highlight:hover {
+      background: rgba(130, 255, 161, 0.8) !important;
+    }
+    .qna-item:last-child {
+      border-bottom: none;
+    }
+    .qna-answer {
+      display: none;
+      padding: 5px;
+      color: gray;
+    }
+    .highlight {
+      background: rgba(130, 255, 161, 0.8);
+      font-weight: bold;
+    }
+    .chatbox-button {
+      font-weight: bold;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgb(255, 228, 185);
+      color: black;
+      padding: 15px 20px;
+      font-size: 18px;
+      border-radius: 8px;
+      border: 2px solid black;
+      cursor: pointer;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease-in-out;
+    }
+    .chatbox-button:hover {
+      background: white;
+    }
+    .predict-button {
+      font-weight: bold;
+    }
+    .close-chatbox {
+      position: absolute;
+      top: -18px;
+      right: 0px;
+      cursor: default;
+      font-weight: bold;
+      color: red;
+      border: 2px solid red;
+      background: black;
+      padding: 2px 6px;
+      font-size: 16px;
+      transition: background 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+    }
+    .close-chatbox:hover {
+      background: red;
+      color: white;
+      border-color: white;
+    }
+    .loading {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+    }
+    .loading img {
+      width: 450px;
+      height: 300px;
+    }
+  </style>
+  <script>
+    function toggleAnswer(id) {
+      var selectedAnswer = document.getElementById(id);
+      var selectedItem = document.querySelector(`[onclick="toggleAnswer('${id}')"]`);
+      if (selectedAnswer.style.display === "block") {
+        selectedAnswer.style.display = "none";
+        selectedItem.classList.remove("highlight");
+      } else {
+        document.querySelectorAll(".qna-answer").forEach(answer => answer.style.display = "none");
+        document.querySelectorAll(".qna-item").forEach(item => item.classList.remove("highlight"));
+        selectedAnswer.style.display = "block";
+        selectedItem.classList.add("highlight");
+      }
+    }
+    function toggleChatbox() {
+      var chatbox = document.getElementById("qna-chatbox");
+      chatbox.style.display = chatbox.style.display === "block" ? "none" : "block";
+    }
+    function closeChatbox() {
+      document.getElementById("qna-chatbox").style.display = "none";
+    }
+    function showLoading() {
+      document.getElementById("loading").style.display = "block";
+      document.querySelector(".outer").style.display = "none";
+    }
+    function validateForm() {
+      showLoading();
+      setTimeout(function() {
+        document.querySelector("form").submit();
+      }, 4800);
+      return false;
+    }
+  </script>
+</head>
+<body>
+  <div class="outer">
+    <h2>PREDICT C-SECTION</h2>
+    <form method="POST" th:action="@{/predict}" onsubmit="return validateForm()">
+      <div class="input-line">
+        <label for="fetal_distress">Fetal Distress (1 for Yes, 0 for No):</label>
+        <input type="number" id="fetal_distress" name="fetal_distress" min="0" max="1" required>
+      </div>
+      <div class="input-line">
+        <label for="maternal_age">Maternal Age (years):</label>
+        <input type="number" id="maternal_age" name="maternal_age" min="14" max="80" required>
+      </div>
+      <div class="input-line">
+        <label for="gestational_age">Gestational Age (weeks):</label>
+        <input type="number" id="gestational_age" name="gestational_age" min="12" max="42" required>
+      </div>
+      <div class="input-line">
+        <label for="previous_c_section">Previous C-section (1 for Yes, 0 for No):</label>
+        <input type="number" id="previous_c_section" name="previous_c_section" min="0" max="1" required>
+      </div>
+      <div class="input-line">
+        <label for="blood_pressure">Blood Pressure (mm Hg):</label>
+        <input type="number" id="blood_pressure" name="blood_pressure" min="60" max="500" required>
+      </div>
+      <div class="input-line">
+        <label for="bmi">BMI:</label>
+        <input type="number" step="0.1" id="bmi" name="bmi" min="15" max="60" required>
+      </div>
+      <button class="predict-button" type="submit">PREDICT</button>
+    </form>
+  </div>
+
+  <div id="loading" class="loading">
+    <img src="/animation.gif" alt="Loading..." />
+  </div>
+
+  <div class="chatbox-button" onclick="toggleChatbox()">FAQ</div>
+
+  <div id="qna-chatbox" class="qna-chatbox">
+    <span class="close-chatbox" onclick="closeChatbox()">X</span>
+
+    <!-- Your FAQ section (unchanged) -->
+    <div class="qna-item" onclick="toggleAnswer('q1')">
+      1. What is this prediction for?
+      <div class="qna-answer" id="q1">This prediction helps determine if a C-section might be necessary based on input data.</div>
+    </div>
+    <div class="qna-item" onclick="toggleAnswer('q2')">
+      2. What factors are considered in the prediction?
+      <div class="qna-answer" id="q2">The prediction considers fetal distress, maternal age, gestational age, previous C-section history, blood pressure, and BMI.</div>
+    </div>      
+    <div class="qna-item" onclick="toggleAnswer('q3')">
+      3. What is Fetal Distress?
+      <div class="qna-answer" id="q3">Fetal distress refers to signs that a baby is not getting enough oxygen during pregnancy or labor. It is often detected through abnormal heart rate patterns.</div>
+    </div>   
+    <div class="qna-item" onclick="toggleAnswer('q4')">
+      4. What is Maternal Age?
+      <div class="qna-answer" id="q4">Maternal age is the age of the mother during pregnancy. Advanced maternal age (above 45) may increase pregnancy-related risks, including the need for a C-section.</div>
+    </div>   
+    <div class="qna-item" onclick="toggleAnswer('q5')">
+      5. What is Gestational Age?
+      <div class="qna-answer" id="q5">Gestational age is the number of weeks a baby has been developing in the womb, starting from the mother’s last menstrual period. A normal pregnancy lasts around 40 weeks.</div>
+    </div>   
+    <div class="qna-item" onclick="toggleAnswer('q6')">
+      6. What does Previous C-section mean?
+      <div class="qna-answer" id="q6">This refers to whether the mother has had a C-section in a previous pregnancy. A history of C-section increases the likelihood of requiring another one.</div>
+    </div>   
+    <div class="qna-item" onclick="toggleAnswer('q7')">
+      7. What is Blood Pressure?
+      <div class="qna-answer" id="q7">Blood pressure is the force of blood against the walls of arteries. High blood pressure during pregnancy (above 140/90 mmHg) can lead to complications requiring a C-section.</div>
+    </div>   
+    <div class="qna-item" onclick="toggleAnswer('q8')">
+      8. What is BMI (Body Mass Index)?
+      <div class="qna-answer" id="q8">BMI is a measure of body fat based on weight and height. A very high or low BMI can affect pregnancy health and delivery method.</div>
+    </div>   
+    <div class="qna-item" onclick="toggleAnswer('q9')">
+      9. How does Fetal Distress impact C-section decisions?
+      <div class="qna-answer" id="q9">Fetal distress can lead to an emergency C-section if the baby is not receiving enough oxygen or is in danger.</div>
+    </div>    
+    <div class="qna-item" onclick="toggleAnswer('q10')">
+      10. How does Maternal Age influence the need for a C-section?
+      <div class="qna-answer" id="q10">Older mothers (above 45) have a higher risk of complications like high blood pressure, diabetes, and difficulty in natural labor, increasing the chances of a C-section.</div>
+    </div>   
+    <div class="qna-item" onclick="toggleAnswer('q11')">
+      11. Why is Gestational Age important in predicting a C-section?
+      <div class="qna-answer" id="q11">Babies born too early (before 37 weeks) or too late (after 42 weeks) may face complications that require a C-section for a safe delivery.</div>
+    </div>   
+    <div class="qna-item" onclick="toggleAnswer('q12')">
+      12. How does a Previous C-section affect future deliveries?
+      <div class="qna-answer" id="q12">Having a prior C-section increases the chances of another one due to risks like uterine rupture if a vaginal birth is attempted.</div>
+    </div>  
+    <div class="qna-item" onclick="toggleAnswer('q13')">
+      13. Why is Blood Pressure monitored during pregnancy?
+      <div class="qna-answer" id="q13">High blood pressure can cause complications like preeclampsia, which may require an early or emergency C-section to protect both mother and baby.</div>
+    </div>    
+    <div class="qna-item" onclick="toggleAnswer('q14')">
+      14. How does BMI affect pregnancy and C-section chances?
+      <div class="qna-answer" id="q14">A high BMI (obesity) can make labor difficult, increasing the need for a C-section, while a very low BMI may indicate undernutrition risks.</div>
+    </div>   
+  </div>
+</body>
+</html>

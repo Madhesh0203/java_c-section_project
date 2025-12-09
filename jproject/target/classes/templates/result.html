@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prediction Result</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-image: url("/second.jpg");
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      padding-top: 30px;
+    }
+    .result-container {
+      background-color: rgba(255, 255, 255, 0.65);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+      width: 400px;
+    }
+    h2 {
+      color: black;
+      margin-bottom: 5px;
+    }
+    .prediction-success, .prediction-warning {
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    .prediction-success {
+      color: green;
+    }
+    .prediction-warning {
+      color: red;
+    }
+    .icon {
+      font-size: 40px;
+      display: block;
+      margin: 5px auto;
+    }
+    .instructions {
+      background-color: rgba(255, 251, 221, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #f0c36d;
+      color: #333;
+      text-align: center;
+    }
+    .instructions p {
+      margin: 8px 0;
+      text-align: center;
+    }
+    .box-link {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: rgb(80, 80, 80);
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+    .box-link:hover {
+      background-color: black;
+    }
+    .input-data {
+      display: none;
+      background-color: rgba(240, 240, 240, 0.9);
+      padding: 5px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    .button-container {
+      margin-top: 15px;
+    }
+    .toggle-button {
+      padding: 10px;
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .toggle-button:hover {
+      background-color: #e68900;
+    }
+  </style>
+  <script>
+    function showInputData() {
+      document.getElementById("inputData").style.display = "block";
+      document.getElementById("showButton").style.display = "none";
+      document.getElementById("hideButton").style.display = "inline-block";
+    }
+    function hideInputData() {
+      document.getElementById("inputData").style.display = "none";
+      document.getElementById("showButton").style.display = "inline-block";
+      document.getElementById("hideButton").style.display = "none";
+    }
+  </script>
+</head>
+<body>
+  <div class="result-container">
+    <h2>PREDICTION RESULT</h2>
+
+    <!-- Show icon and result based on prediction -->
+    <div th:if="${prediction == 'C - SECTION'}">
+      <span class="icon">⚠️</span>
+      <p class="prediction-warning" th:text="${prediction}"></p>
+    </div>
+    <div th:if="${prediction != 'C - SECTION'}">
+      <span class="icon">✅</span>
+      <p class="prediction-success" th:text="${prediction}"></p>
+    </div>
+
+    <!-- Show instructions -->
+    <div class="instructions" th:if="${instructions}">
+      <p th:utext="${#strings.replace(instructions, '\n', '<br/>')}"></p>
+    </div>
+
+    <!-- Toggle buttons -->
+    <div class="button-container">
+      <button id="showButton" class="toggle-button" onclick="showInputData()">SHOW INPUT DATA</button>
+      <button id="hideButton" class="toggle-button" onclick="hideInputData()" style="display: none;">HIDE INPUT DATA</button>
+    </div>
+
+    <!-- Input Data Section -->
+    <div class="input-data" id="inputData">
+      <p><strong>Fetal Distress:</strong> <span th:text="${fetal_distress}"></span></p>
+      <p><strong>Maternal Age:</strong> <span th:text="${maternal_age}"></span></p>
+      <p><strong>Gestational Age:</strong> <span th:text="${gestational_age}"></span></p>
+      <p><strong>Previous C-Section:</strong> <span th:text="${previous_c_section}"></span></p>
+      <p><strong>Blood Pressure:</strong> <span th:text="${blood_pressure}"></span></p>
+      <p><strong>BMI:</strong> <span th:text="${bmi}"></span></p>
+    </div>
+
+    <!-- Back to Home -->
+    <a th:href="@{/}" class="box-link">MAKE ANOTHER PREDICTION</a>
+  </div>
+</body>
+</html>
